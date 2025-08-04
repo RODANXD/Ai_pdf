@@ -6,7 +6,6 @@ import Link from "next/link"
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -24,7 +23,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">Unlock the Power of Your Research Papers</h1>
@@ -47,7 +45,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Grid */}
       <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Powerful Features</h2>

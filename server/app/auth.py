@@ -3,6 +3,8 @@ from . import db
 from .models import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token
 import re
+
+
 auth_bp = Blueprint('auth', __name__)
 def is_strong_password(password):
     # At least 8 chars, one uppercase, one special char, one number
@@ -12,6 +14,8 @@ def is_strong_password(password):
         not re.search(r'\d', password)):
         return False
     return True
+
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -36,6 +40,9 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully'}), 201
+
+
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -59,6 +66,8 @@ def login():
             }), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+
+
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
@@ -67,8 +76,72 @@ def refresh():
     new_access_token = create_access_token(identity=str(identity))
     return jsonify({'access_token': new_access_token}), 200
 
+    
 
+@auth_bp.route('/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        return jsonify({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        }), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
 
+@auth_bp.route('/user', methods=['patch'])
+@jwt_required()
+def update_user():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    # Update profile fields
+    if username:
+        if User.query.filter(User.username == username, User.id != user_id).first():
+            return jsonify({'error': 'Username already taken'}), 409
+        user.username = username
+    if email:
+        if User.query.filter(User.email == email, User.id != user_id).first():
+            return jsonify({'error': 'Email already taken'}), 409
+        user.email = email
+    if first_name:
+        user.first_name = first_name
+    if last_name:
+        user.last_name = last_name
+
+    # Update password if requested
+    if new_password:
+        if not current_password or not user.check_password(current_password):
+            return jsonify({'error': 'Current password is incorrect'}), 400
+        user.set_password(new_password)
+
+    db.session.commit()
+    return jsonify({'message': 'Profile updated successfully'}), 200
+
+@auth_bp.route('/user', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'Account deleted'}), 200
 
 

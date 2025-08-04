@@ -30,7 +30,7 @@ def embed_text(text: Union[str, List[str]]) -> np.ndarray:
 
 
     
-def create_faiss_index(vectors: List[np.ndarray], dimension: int = 1536) -> faiss.IndexFlatL2:
+def create_faiss_index(vectors: List[np.ndarray], dimension: int = 384) -> faiss.IndexFlatL2:
     """
     Create and return a FAISS index from vectors
     """

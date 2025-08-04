@@ -3,12 +3,17 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface RegisterFormProps {
   onToggle: () => void;
 }
 
 export default function RegisterForm({ onToggle }: RegisterFormProps) {
+
+
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -21,6 +26,9 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -30,6 +38,19 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
     setError('');
   };
 
+   const validatePassword = (password:string) => {
+    const minLength = password.length >= 8;
+    const hasNumeric = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    return {
+      isValid: minLength && hasNumeric && hasSpecial,
+      errors: [
+        !minLength && "Password must be at least 8 characters long",
+        !hasNumeric && "Password must contain at least one number",
+        !hasSpecial && "Password must contain at least one special character"
+      ].filter(Boolean)
+    };
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -75,6 +96,8 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
       setIsLoading(false);
     }
   };
+  const passwordMatch = formData.password && formData.confirm_password && formData.password === formData.confirm_password;
+  const passwordValidation = validatePassword(formData.password);
 
   return (
     <motion.div
@@ -174,10 +197,10 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
         </div>
 
         <div>
-          <div className="relative">
+          <div className="relative flex items-center">
             <i className="ri-lock-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input
-              type="password"
+              type={showCurrentPassword ? "text" : "password"}
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -185,14 +208,29 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm bg-gray-50"
               placeholder="Password"
             />
+            <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 h-6 w-6 p-0 cursor-pointer"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </Button>
           </div>
+          {formData.password && !passwordValidation.isValid && (
+                    <div className="text-xs sm:text-sm text-red-500 mt-1">
+                      {passwordValidation.errors.map((error, index) => (
+                        <p key={index}>❌ {error}</p>
+                      ))}
+                    </div>)}
         </div>
 
         <div>
-          <div className="relative">
+          <div className="relative flex items-center">
             <i className="ri-lock-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               name="confirm_password"
               value={formData.confirm_password}
               onChange={handleChange}
@@ -200,7 +238,21 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm bg-gray-50"
               placeholder="Confirm Password"
             />
+            <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 h-6 w-6 p-0 cursor-pointer"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </Button>
           </div>
+          {formData.confirm_password && (
+                    <p className={`text-xs sm:text-sm mt-1 ${passwordMatch ? "text-green-600" : "text-red-500"}`}>
+                      {passwordMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
+                    </p>
+                  )}
         </div>
 
         <button

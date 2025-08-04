@@ -139,6 +139,7 @@ const Upload = () => {
             accept={acceptString}
             className="hidden"
             onChange={handleFileChange}
+            // multiple
           />
           <AnimatePresence>
             {!fileData && (

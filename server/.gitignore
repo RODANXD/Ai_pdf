@@ -1,0 +1,23 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+.env
+# virtualenv
+venv/
+# all log files, both local and app-server
+*.log
+# flask server
+instance/
+# os generated
+.DS_Store
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+# pytype
+.pytype/
+# celery

@@ -26,6 +26,8 @@ def create_app():
     app.register_blueprint(pdf_bp, url_prefix='/api/pdf')
     from .routes import qa_bp
     app.register_blueprint(qa_bp, url_prefix='/api/qa')
+    from .voice import voice_bp
+    app.register_blueprint(voice_bp, url_prefix='/api/voice')
     
     return app
     

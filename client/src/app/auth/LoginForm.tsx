@@ -5,6 +5,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/store/Authcontext';
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from '@/components/ui/button';
+
+
 interface LoginFormProps {
   onToggle: () => void;
 }
@@ -14,6 +18,7 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
     email: '',
     password: ''
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -112,18 +117,27 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
         </div>
 
         <div>
-          <div className="relative">
-            <i className="ri-lock-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm bg-gray-50"
-              placeholder="Password"
-            />
-          </div>
+          <div className="relative flex items-center">
+                      <i className="ri-lock-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-sm bg-gray-50"
+                        placeholder="Password"
+                      />
+                      <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-2 h-6 w-6 p-0 cursor-pointer"
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              >
+                                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                              </Button>
+                    </div>
         </div>
 
         <div className="text-center">
