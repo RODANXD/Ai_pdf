@@ -13,6 +13,7 @@ instance/
 # python
 __pycache__/
 *.py[cod]
+uploads/
 *$py.class
 # mypy
 .mypy_cache/
