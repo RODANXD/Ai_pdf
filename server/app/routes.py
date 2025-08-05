@@ -1,13 +1,19 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from .models import PdfData
+from .models import PdfData, ChatHistory
 import faiss
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import requests
 from pdfminer.high_level import extract_text
 import os
+import json
 from dotenv import load_dotenv
+from .pdf import UPLOAD_FOLDER
+from . import db
+import easyocr
+from PIL import Image
+
 
 
 load_dotenv()
@@ -34,6 +40,8 @@ def ask_question():
     llm_model = data.get('llm_model', 'openai/gpt-3.5-turbo')
     prompt_style = data.get('prompt_style', 'concise')
 
+    
+
     print(f"[DEBUG] User {user_id} is asking question: {question} for PDF ID: {pdf_id} using model: {llm_model} with style: {prompt_style}")
     # Whitelist of free models
     allowed_models = [
@@ -53,13 +61,28 @@ def ask_question():
     if not pdf:
         return jsonify({'error': 'PDF not found'}), 404
 
-    file_path = os.path.join('uploads',pdf.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
+
+
+
+    is_image = pdf.filename.lower().endswith(('.png', '.jpg', '.jpeg'))
+
 
     # Split PDF content into chunks (simple split, improve as needed)
     try:
-        content = extract_text(file_path)
+        if is_image:
+            # Use EasyOCR for images
+            reader = easyocr.Reader(['en'])
+            img = Image.open(file_path)
+            content = ' '.join([t[1] for t in reader.readtext(np.array(img))])
+        else:
+            # Use pdfminer for PDFs
+            content = extract_text(file_path)
     except Exception as e:
-        return jsonify({'error': 'Failed to extract text from PDF', 'details': str(e)}), 500
+        print("debug entered except", e)
+        return jsonify({'error': f'Failed to extract text from {"image" if is_image else "PDF"}', 'details': str(e)}), 500
+    
+    
     chunk_size = 500  # characters
     chunks = [content[i:i+chunk_size] for i in range(0, len(content), chunk_size)]
 
@@ -146,10 +169,6 @@ def ask_question():
 
 # --- Chat History Endpoints ---
 from flask_jwt_extended import get_jwt_identity
-import json
-from . import db
-
-from .models import ChatHistory
 
 @qa_bp.route('/history', methods=['GET'])
 @jwt_required()
@@ -200,9 +219,6 @@ def shared(token):
 
 
 
-from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from .models import PdfData, ChatHistory  # and any other models you need
 from datetime import datetime, timedelta
 
 

@@ -41,7 +41,7 @@ const getToken = () =>
           .slice(0, 5)
       );
     })
-    .catch(() => toast("Failed to load documents"));
+    .catch(() => toast.error("Failed to load documents"));
 
 
 fetch("http://localhost:5000/api/qa/history", {
@@ -54,7 +54,7 @@ fetch("http://localhost:5000/api/qa/history", {
     ).length;
     setTotalQuestions(userQuestions);
   })
-  .catch(() => toast("Failed to load questions"));
+  .catch(() => toast.error("Failed to load questions"));
 }, []);
 
 useEffect(() => {

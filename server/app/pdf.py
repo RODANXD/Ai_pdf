@@ -10,13 +10,13 @@ import numpy as np
 import faiss
 from PIL import Image
 import json
-import pytesseract
+# import pytesseract
 import traceback
 # import pdf2image
 import requests
 from dotenv import load_dotenv
 load_dotenv()
-
+import easyocr 
 
 
 pdf_bp = Blueprint('pdf', __name__)
@@ -78,7 +78,7 @@ def upload_pdf():
         user = User.query.get(user_id)
         if not user:
             return jsonify({"msg": "User not found"}), 404
-        pdf_record = PdfData(filename=filename, user_id=user_id, pdf_size=pdf_size)
+        pdf_record = PdfData(filename=filename, user_id=user_id, pdf_size=pdf_size, file_type='pdf')
         db.session.add(pdf_record)
         db.session.commit()
         chunks = chunk_text(pdf_content)
@@ -90,6 +90,7 @@ def upload_pdf():
                 "text": chunk,
                 "user_id": user_id,
                 "file_id": pdf_record.id
+                
             })
         index.add(np.array(vectors))
 
@@ -110,7 +111,7 @@ def upload_pdf():
 
 os.environ['TESSDATA_PREFIX'] = r"C:\Program Files\Tesseract-OCR\tessdata"
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 @pdf_bp.route('/image', methods=['POST'])
 @jwt_required()
@@ -140,8 +141,9 @@ def upload_image():
         img_size = f"{os.path.getsize(image_path) / 1024:.1f} KB"
         print(f"[UPLOAD_IMAGE] Image saved: {image_path}", file=sys.stderr)
         img = Image.open(image_path)
+        reader = easyocr.Reader(['en'])   
         print(f"[UPLOAD_IMAGE] Image opened for OCR", file=sys.stderr)
-        text = pytesseract.image_to_string(img)
+        text = ' '.join([t[1] for t in reader.readtext(np.array(img))])
         print(f"[UPLOAD_IMAGE] OCR text length: {len(text)}", file=sys.stderr)
         if not text.strip():
             print("[UPLOAD_IMAGE] No text detected in the image", file=sys.stderr)
@@ -165,7 +167,7 @@ def upload_image():
         return jsonify({"msg": "User not found"}), 404
 
     try:
-        ocr_record = PdfData(filename=filename, user_id=user_id, pdf_size=img_size)
+        ocr_record = PdfData(filename=filename, user_id=user_id, pdf_size=img_size, file_type='image')
         db.session.add(ocr_record)
         db.session.commit()
         print(f"[UPLOAD_IMAGE] DB commit successful, ocr_id: {ocr_record.id}", file=sys.stderr)
@@ -179,7 +181,7 @@ def upload_image():
         "msg": "Image uploaded successfully",
         "ocr_id": ocr_record.id,
         "filename": filename,
-        # "text": text[:500]
+        "text": text[:500]
     })
 
 
@@ -249,7 +251,15 @@ def summarize_pdf():
         return jsonify({'summary': pdf.summary}), 200
     file_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
     try:
-        content = extract_text(file_path)
+
+        is_image = pdf.file_type == 'image'
+
+        if is_image:
+            img = Image.open(file_path)
+            reader = easyocr.Reader(['en'])
+            content = ' '.join([t[1] for t in reader.readtext(np.array(img))])
+        else:
+            content = extract_text(file_path)
     except Exception as e:
         return jsonify({'error': 'Failed to extract text from PDF', 'details': str(e)}), 500
     prompt = f"Summarize the following research paper in a short paragraph. Then, list 3-5 key points and highlight the most important sentences.\n\nPaper:\n{content[:4000]}"
@@ -288,8 +298,16 @@ def extract_entities():
         return jsonify({'error': 'PDF not found'}), 404
     file_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
     try:
-        content = extract_text(file_path)
+
+        is_image = pdf.file_type == 'image'
+        if is_image:
+            img = Image.open(file_path)
+            reader =  easyocr.Reader(['en'])
+            content = ' '.join([t[1] for t in reader.readtext(np.array(img))])
+        else:
+            content = extract_text(file_path)
     except Exception as e:
+        print(f"Error extracting text: {e}")
         return jsonify({'error': 'Failed to extract text from PDF', 'details': str(e)}), 500
     prompt = (
         "Extract the main entities (people, organizations, concepts, methods) and their relationships "
@@ -324,6 +342,7 @@ def extract_entities():
                 return jsonify({'error': 'AI did not return valid JSON','raw': entities}), 500
         return jsonify({'graph': entities}), 200
     except Exception as e:
+        print(f"Error extracting text: {e}")
         return jsonify({'error': 'Failed to extract entities', 'details': str(e)}), 500
 
 @pdf_bp.route('/delete/<int:pdf_id>', methods=['DELETE'])

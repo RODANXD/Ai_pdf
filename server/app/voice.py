@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .models import PdfData
 from werkzeug.utils import secure_filename
+from faster_whisper import WhisperModel
 
 import os
 import warnings
@@ -10,7 +11,7 @@ warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using F
 
 
 voice_bp = Blueprint('voice', __name__)
-whisper_model = whisper.load_model("base")
+whisper_model = WhisperModel("base") 
 
 
 @voice_bp.route('/transcribe', methods=['POST'])
@@ -32,8 +33,8 @@ def voice_to_text():
 
     try:
         print("[VOICE_TO_TEXT] Starting transcription", file=sys.stderr)
-        result = whisper_model.transcribe(save_path)
-        text = result['text'].strip()
+        segments, _ = whisper_model.transcribe(save_path)
+        text = ''.join([s.text for s in segments]).strip()
         print(f"[VOICE_TO_TEXT] Transcription result: {text}", file=sys.stderr)
         return jsonify({"transcription": text}), 200
     except Exception as e:

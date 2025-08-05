@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SharedAnswerPage() {
   const { token } = useParams();
@@ -18,9 +19,12 @@ export default function SharedAnswerPage() {
           setCreatedAt(data.created_at);
         } else {
           setError("Invalid or expired link.");
+          toast.error("Invalid or expired link.");
         }
       })
-      .catch(() => setError("Failed to fetch answer."));
+      .catch(() => {
+        setError("Failed to fetch answer.")
+    toast.error("Failed to fetch answer.")});
   }, [token]);
 
   return (

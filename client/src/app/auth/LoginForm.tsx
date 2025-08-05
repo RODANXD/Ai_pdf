@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/store/Authcontext';
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from '@/components/ui/button';
-
+import { toast } from 'sonner';
 
 interface LoginFormProps {
   onToggle: () => void;
@@ -21,7 +21,7 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  // const [success, setSuccess] = useState('');
 
   const router = useRouter();
   const { login } = useAuth();
@@ -50,7 +50,8 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Login successful!');
+        // setSuccess('Login successful!');
+        toast.success('Login successful!');
         localStorage.setItem('access_token', data.access_token);
         login(data.access_token);
         router.push('/dashboard');
@@ -95,11 +96,11 @@ export default function LoginForm({ onToggle }: LoginFormProps) {
           </div>
         )}
         
-        {success && (
+        {/* {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
             {success}
           </div>
-        )}
+        )} */}
 
         <div>
           <div className="relative">

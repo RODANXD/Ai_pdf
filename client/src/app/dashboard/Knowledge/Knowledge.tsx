@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import CytoscapeComponent from "react-cytoscapejs";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 interface Node {
   data: { id: string; label: string };
 }
@@ -63,30 +64,30 @@ export default function KnowledgeGraphPage() {
         } else {
           // Fallback: use mock data for debugging
           const cyNodes = [
-            { data: { id: "Mussoorie", label: "Mussoorie" } },
-            { data: { id: "Uttarakhand", label: "Uttarakhand" } },
-            { data: { id: "Doon Valley", label: "Doon Valley" } },
-            { data: { id: "Garhwal Himalayan range", label: "Garhwal Himalayan range" } },
+            { data: { id: "Unknown", label: "Unknown" } },
+            { data: { id: "Unknown", label: "Unknown" } },
+            { data: { id: "Unknown", label: "Unknown" } },
+            { data: { id: "Unknown", label: "Unknown" } },
           ];
           const cyEdges = [
-            { data: { source: "Mussoorie", target: "Uttarakhand", label: "location" } },
-            { data: { source: "Mussoorie", target: "Garhwal Himalayan range", label: "location" } },
-            { data: { source: "Mussoorie", target: "Doon Valley", label: "location" } },
+            { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
+            { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
+            { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
           ];
           setElements([...cyNodes, ...cyEdges]);
         }
       } catch (e) {
         // On error, show mock data for easier debugging
         const cyNodes = [
-          { data: { id: "Mussoorie", label: "Mussoorie" } },
-          { data: { id: "Uttarakhand", label: "Uttarakhand" } },
-          { data: { id: "Doon Valley", label: "Doon Valley" } },
-          { data: { id: "Garhwal Himalayan range", label: "Garhwal Himalayan range" } },
+          { data: { id: "Unknown", label: "Unknown" } },
+          { data: { id: "Unknown", label: "Unknown" } },
+          { data: { id: "Unknown", label: "Unknown" } },
+          { data: { id: "Unknown", label: "Unknown" } },
         ];
         const cyEdges = [
-          { data: { source: "Mussoorie", target: "Uttarakhand", label: "location" } },
-          { data: { source: "Mussoorie", target: "Garhwal Himalayan range", label: "location" } },
-          { data: { source: "Mussoorie", target: "Doon Valley", label: "location" } },
+          { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
+          { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
+          { data: { source: "Unknown", target: "Unknown", label: "unkown" } },
         ];
         setElements([...cyNodes, ...cyEdges]);
       }

@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-
+import { toast } from 'sonner';
 type AllowedType = 'pdf' | 'image';
 
 const Upload = () => {
@@ -15,6 +15,7 @@ const Upload = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const router = useRouter();
 
   const acceptString = fileType === 'pdf'
@@ -37,6 +38,7 @@ const Upload = () => {
     if (!file) return;
     if (!validateFile(file)) {
       setError(`Please upload a valid ${extension}`);
+      toast.error(`Please upload a valid ${extension}`);
       return;
     }
     setFileData(file);
@@ -57,41 +59,50 @@ const Upload = () => {
   /* 3. Upload                                                          */
   /* ------------------------------------------------------------------ */
   const handleUpload = async () => {
-    if (!fileData) {
-      setError('No file selected.');
-      return;
-    }
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setError('No authentication token found. Please log in again.');
-      return;
-    }
-    const formData = new FormData();
-    formData.append(fileType === 'pdf' ? 'file' : 'image', fileData);
+  if (!fileData) {
+    setError('No file selected.');
+    toast.error('No file selected.');
+    return;
+  }
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    setError('No authentication token found. Please log in again.');
+    toast.error('No authentication token found. Please log in again.');
+    return;
+  }
 
-    try {
-      const endpoint =
-        fileType === 'pdf'
-          ? 'http://localhost:5000/api/pdf/upload'
-          : 'http://localhost:5000/api/pdf/image'; 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+  const formData = new FormData();
+  formData.append(fileType === 'pdf' ? 'file' : 'image', fileData);
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.msg || res.statusText);
-      }
+  setUploading(true); 
+  try {
+    const endpoint =
+      fileType === 'pdf'
+        ? 'http://localhost:5000/api/pdf/upload'
+        : 'http://localhost:5000/api/pdf/image';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
 
-      const data = await res.json();
-      setPreview(data.file_text || data.text || 'Upload successful!');
-      setError('');
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.msg || res.statusText);
     }
-  };
+
+    const data = await res.json();
+    setPreview(data.file_text || data.text || 'Upload successful!');
+    toast.success('Upload successful!');
+    setError('');
+  } catch (err: any) {
+    setError(err.message || 'Upload failed');
+    toast.error(err.message || 'Upload failed');
+  } finally {
+    setUploading(false); 
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
@@ -199,17 +210,23 @@ const Upload = () => {
 
         {/* Upload Button */}
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleUpload}
-          disabled={!fileData}
-          className={`w-full font-semibold py-3 rounded-xl transition
-            ${fileData
-              ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-        >
-          Upload {fileType === 'pdf' ? 'PDF' : 'Image'}
-        </motion.button>
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={handleUpload}
+  disabled={!fileData || uploading}
+  className={`w-full font-semibold py-3 rounded-xl transition flex items-center justify-center
+    ${fileData && !uploading
+      ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+      : 'bg-slate-200 text-slate-400 cursor-not-allowed'}
+  `}
+>
+  {uploading ? (
+    <span className="loader h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+  ) : (
+    `Upload ${fileType === 'pdf' ? 'PDF' : 'Image'}`
+  )}
+</motion.button>
+
 
         {/* Preview */}
         <AnimatePresence>

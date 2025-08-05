@@ -23,6 +23,7 @@ class PdfData(db.Model):
     user = db.relationship('User', backref=db.backref('pdfs', lazy=True))
     filename = db.Column(db.String(256), nullable=False)
     summary = db.Column(db.Text(length=4294967295), nullable=True)
+    file_type = db.Column(db.String(10), default='pdf')
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     pdf_size = db.Column(db.String(32), nullable=False)

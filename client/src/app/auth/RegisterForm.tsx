@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface RegisterFormProps {
   onToggle: () => void;
@@ -25,7 +26,7 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  // const [success, setSuccess] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -36,6 +37,7 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
       [e.target.name]: e.target.value
     });
     setError('');
+    toast.error('Invalid data')
   };
 
    const validatePassword = (password:string) => {
@@ -58,6 +60,7 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
 
     if (formData.password !== formData.confirm_password) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       setIsLoading(false);
       return;
     }
@@ -83,15 +86,18 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
       
 
       if (response.ok) {
-        setSuccess('Registration successful! Please sign in.');
+        // setSuccess('Registration successful! Please sign in.');
+        toast.success('Registration successful! Please sign in.')
         setTimeout(() => {
           onToggle();
         }, 1500);
       } else {
         setError(data.message || 'Registration failed');
+        toast.error(data.message || 'Registration failed');
       }
     } catch (err) {
       setError('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -123,17 +129,17 @@ export default function RegisterForm({ onToggle }: RegisterFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        {error && (
+        {/* {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
-        
-        {success && (
+         */}
+        {/* {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
             {success}
           </div>
-        )}
+        )} */}
 
         <div>
           <div className="relative">

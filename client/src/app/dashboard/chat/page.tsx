@@ -92,7 +92,7 @@ useEffect(() => {
         })) : []
         setDocuments(docs)
       } catch (e) {
-        toast("Failed to load documents")
+        toast.error("Failed to load documents")
         setDocuments([])
       }
     }
@@ -151,7 +151,7 @@ useEffect(() => {
 
   const startRecording = async () => {
     if (!navigator.mediaDevices || !window.MediaRecorder) {
-      toast("Your browser does not support audio recording.")
+      toast.warning("Your browser does not support audio recording.")
       return
     }
     try {
@@ -175,7 +175,7 @@ useEffect(() => {
       recorder.onstop = async () => {
         console.log("[DEBUG] Recording stopped. Chunks count:", localAudioChunks.length);
         if (localAudioChunks.length === 0) {
-          toast("No audio recorded. Please try again.");
+          toast.error("No audio recorded. Please try again.");
           console.log("[DEBUG] No audio chunks recorded.");
           return;
         }
@@ -186,7 +186,7 @@ useEffect(() => {
       
         const token = getToken();
         if (!token) {
-          toast("Not logged in");
+          toast.error("Not logged in");
           return;
         }
         console.log("[DEBUG] Audio file to be sent for transcription:", audioFile);
@@ -197,9 +197,9 @@ useEffect(() => {
           setInput(text);
           setIsTranscribing(false);
           console.log("[DEBUG] Transcription:", text);
-          toast("Speech converted to text successfully");
+          toast.success("Speech converted to text successfully");
         } catch (err: any) {
-          toast("Transcription failed");
+          toast.error("Transcription failed");
           console.log("[DEBUG] Transcription error:", err);
         }
       };
@@ -208,7 +208,7 @@ useEffect(() => {
       setIsRecording(true)
       toast("Recording... Click again to stop.")
     } catch (error) {
-      toast("Could not access microphone")
+      toast.warning("Could not access microphone")
       console.log("[DEBUG] Error accessing microphone:", error)
     }
   }
@@ -561,6 +561,7 @@ const handleSummarize = async (pdfId: number) => {
               const data = await res.json();
               console.log(data);
               if (data.url) {
+                console.log
                 navigator.clipboard.writeText(data.url);
                 alert("Shareable link copied to clipboard:\n" + data.url);
               } else {

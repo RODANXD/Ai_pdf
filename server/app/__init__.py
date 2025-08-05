@@ -17,7 +17,16 @@ def create_app():
     
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app)
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "http://localhost:3000"  
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     bcrypt.init_app(app)
     
     from .auth import auth_bp

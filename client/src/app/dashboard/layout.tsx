@@ -9,6 +9,7 @@ import { useAuth } from "@/store/Authcontext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +38,10 @@ export default function DashboardLayout({
   /* ---------------------------------- */
 
   const handleLogout = () => {
+    
     logout();
+      toast.success("Logged out successfully")
+
     router.push("/");
   };
 

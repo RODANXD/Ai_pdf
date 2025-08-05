@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,7 @@ export default function UserSettingsPage() {
         }
       } catch {
         setError("Failed to load user info.");
+        toast.error("Failed to load user info.")
       }
     };
     fetchUser();
@@ -80,9 +82,11 @@ export default function UserSettingsPage() {
         setForm((f) => ({ ...f, current_password: "", new_password: "" }));
       } else {
         setError(data.error || "Update failed.");
+        toast.error(data.error || "Update failed.");
       }
     } catch {
       setError("Update failed.");
+      toast.error("Update failed.");
     }
     setLoading(false);
   };
@@ -97,13 +101,16 @@ export default function UserSettingsPage() {
 
       if (res.ok) {
         localStorage.clear();
+        toast.success("Account deleted successfully!");
         window.location.href = "/"; // or router.push("/login")
       } else {
         const data = await res.json();
         setError(data.error || "Could not delete account.");
+        toast.error(data.error || "Could not delete account.");
       }
     } catch {
       setError("Network error while deleting account.");
+      toast.error("Network error while deleting account.");
     }
     setDeleteModalOpen(false);
   };

@@ -76,7 +76,7 @@ export default function DocumentsPage({ text }: { text: string }) {
         console.log("doc", docs);
         setDocuments(docs);
       } catch (e) {
-        toast("Failed to load documents")
+        toast.error("Failed to load documents")
         setDocuments([])
       }
     }
@@ -327,7 +327,7 @@ export default function DocumentsPage({ text }: { text: string }) {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      toast("Failed to download file");
+      toast.error("Failed to download file");
     }
   }}
 >
@@ -348,9 +348,9 @@ export default function DocumentsPage({ text }: { text: string }) {
       throw new Error('Delete failed');
     }
     setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
-    toast('PDF deleted successfully');
+    toast.success('Document deleted successfully');
   } catch (err) {
-    toast('Failed to delete PDF');
+    toast.error('Failed to delete Document');
   }
 }}>
   <Trash2 className="h-4 w-4 mr-2" />
